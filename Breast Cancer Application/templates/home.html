@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breast Cancer Prediction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .input-highlight {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .input-highlight:focus {
+            border-left: 4px solid #8b5cf6;
+            box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.1), 0 2px 4px -1px rgba(139, 92, 246, 0.06);
+        }
+        .pink-btn {
+            background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+        }
+        .pink-btn:hover {
+            background: linear-gradient(135deg, #db2777 0%, #e11d48 100%);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-4xl mx-auto" data-aos="fade-up">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Breast Cancer Prediction</h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Enter your diagnostic measurements below to assess the likelihood of breast cancer.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="p-6 md:p-8">
+                    <!-- Flask Form -->
+                    <form method="POST" action="/predict" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="radius_mean" class="block text-sm font-medium text-gray-700 mb-1">Radius Mean</label>
+                            <input type="number" step="0.01" name="radius_mean" id="radius_mean" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-highlight focus:outline-none" placeholder="e.g. 12.34" required>
+                        </div>
+                        
+                        <div>   
+                            <label for="texture_mean" class="block text-sm font-medium text-gray-700 mb-1">Texture Mean</label>
+                            <input type="number" step="0.01" name="texture_mean" id="texture_mean" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-highlight focus:outline-none" placeholder="e.g. 15.67" required>
+                        </div>
+                        
+                        <div>
+                            <label for="perimeter_mean" class="block text-sm font-medium text-gray-700 mb-1">Perimeter Mean</label>
+                            <input type="number" step="0.01" name="perimeter_mean" id="perimeter_mean" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-highlight focus:outline-none" placeholder="e.g. 78.90" required>
+                        </div>
+                        
+                        <div>
+                            <label for="smoothness_mean" class="block text-sm font-medium text-gray-700 mb-1">Smoothness Mean</label>
+                            <input type="number" step="0.0001" name="smoothness_mean" id="smoothness_mean" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-highlight focus:outline-none" placeholder="e.g. 0.0895" required>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label for="compactness_mean" class="block text-sm font-medium text-gray-700 mb-1">Compactness Mean</label>
+                            <input type="number" step="0.0001" name="compactness_mean" id="compactness_mean" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-highlight focus:outline-none" placeholder="e.g. 0.1234" required>
+                        </div>
+
+                        <div class="md:col-span-2 text-center mt-6">
+                            <button type="submit" class="pink-btn text-white font-semibold px-8 py-3 rounded-lg shadow-md transition-all duration-300">
+                                <i data-feather="activity" class="inline mr-2"></i> Predict Now
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Result Section -->
+                {% if prediction %}
+                <div id="resultSection" class="bg-gray-50 border-t border-gray-200 p-6 md:p-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Prediction Result</h3>
+                    <div class="flex items-center justify-center">
+                        <div id="resultCard" class="max-w-md w-full bg-white rounded-lg shadow-sm p-6 text-center">
+                            {% if prediction == "Malignant" %}
+                                <div class="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center bg-red-100">
+                                    <i data-feather="alert-triangle" class="w-10 h-10 text-red-500"></i>
+                                </div>
+                                <h4 class="text-xl font-bold mb-2 text-red-600">High Risk Detected</h4>
+                                <p class="text-gray-600">
+                                    The prediction suggests a high likelihood of malignancy. Please consult with a specialist immediately.
+                                </p>
+                                {% if proba %}
+                                    <p class="text-gray-700 mt-2 font-medium">
+                                        Confidence: {{ (proba * 100) | round(2) }}%
+                                    </p>
+                                {% endif %}
+                            {% else %}
+                                <div class="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center bg-green-100">
+                                    <i data-feather="check-circle" class="w-10 h-10 text-green-500"></i>
+                                </div>
+                                <h4 class="text-xl font-bold mb-2 text-green-600">Low Risk Detected</h4>
+                                <p class="text-gray-600">
+                                    The prediction suggests a low likelihood of malignancy. However, regular check-ups are recommended.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mt-12 text-center text-gray-500 text-sm">
+                <p>This tool is for informational purposes only. Always consult with a healthcare professional.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        AOS.init();
+        feather.replace();
+    </script>
+</body>
+</html>
