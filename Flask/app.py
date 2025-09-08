@@ -2,7 +2,6 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# URL Binding
 @app.route('/')
 def hello():
     return("Hello, I am Mohsin")
